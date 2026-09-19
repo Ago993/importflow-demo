@@ -68,4 +68,19 @@ assert.equal(roundtrip.stats.error,0);
 
 assert.throws(()=>core.parseCSV("x".repeat(core.LIMITS.csvChars+1)),/troppo grande/i);
 assert.throws(()=>core.parseCSV("a;b\n"+"x".repeat(core.LIMITS.fieldChars+1)+";1"),/troppo lungo/i);
+assert.throws(()=>core.parseCSV('sku;nome\n1;"rotto'),/virgolette non chiuse/i);
+assert.ok(core.normalizeVat("120","0").error);
+
+const exactLimit=["sku;nome;prezzo"];
+for(let i=0;i<10_000;i++) exactLimit.push("A"+i+";Prodotto "+i+";1");
+const exactPrepared=core.prepareData(core.parseCSV(exactLimit.join("\n")));
+assert.equal(exactPrepared.rows.length,10_000);
+assert.equal(exactPrepared.truncated,false);
+
+const overLimit=[];
+for(let i=0;i<10_001;i++) overLimit.push(i+";"+(i+1)+";"+(i+2));
+const overPrepared=core.prepareData(core.parseCSV(overLimit.join("\n")));
+assert.equal(overPrepared.rows.length,10_000);
+assert.equal(overPrepared.truncated,true);
+
 console.log("OK - ImportFlow core tests passed");

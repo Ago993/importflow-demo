@@ -67,7 +67,7 @@
     text=cleanText(text);
     if(text.length>LIMITS.csvChars) throw new Error("CSV troppo grande: massimo 5 MB di testo.");
     delimiter=delimiter||detectDelimiter(text);
-    const rows=[];let row=[],field="",quoted=false;
+    const rows=[];let row=[],field="",quoted=false,truncated=false;
     for(let i=0;i<text.length;i++){
       const ch=text[i];
       if(quoted){
@@ -85,17 +85,21 @@
           if(row.some(cell=>cell!=="")){
             if(row.length>LIMITS.csvColumns) throw new Error("Troppe colonne nel CSV.");
             rows.push(row);
-            if(rows.length>LIMITS.csvRows+1) break;
+            if(rows.length>LIMITS.csvRows+1){truncated=true;break;}
           }
           row=[];
         }else field+=ch;
       }
     }
+    if(quoted) throw new Error("CSV non valido: virgolette non chiuse.");
+    if(field.length>LIMITS.fieldChars) throw new Error("Campo CSV troppo lungo.");
     if(field!==""||row.length){
       row.push(field);
+      if(row.length>LIMITS.csvColumns) throw new Error("Troppe colonne nel CSV.");
       if(row.some(cell=>cell!=="")) rows.push(row);
     }
-    return {rows:rows.slice(0,LIMITS.csvRows+1),delimiter,truncated:rows.length>LIMITS.csvRows};
+    if(rows.length>LIMITS.csvRows+1) truncated=true;
+    return {rows:rows.slice(0,LIMITS.csvRows+1),delimiter,truncated};
   }
 
   function detectHeader(rows){
@@ -153,6 +157,7 @@
     if(n==null) return {value:null,error:"IVA non valida"};
     if(n>0&&n<1) n*=100;
     n=Math.round(n*100)/100;
+    if(n<0||n>100) return {value:null,error:"IVA fuori intervallo 0-100"};
     const standard=[0,4,5,10,22];
     return {value:n,warning:standard.includes(n)?null:"Aliquota IVA non standard"};
   }
@@ -267,12 +272,15 @@
     const hasHeader=detectHeader(parsed.rows);
     const headers=hasHeader?parsed.rows[0].map((h,i)=>cleanText(h).trim()||"Colonna "+(i+1)):
       (parsed.rows[0]||[]).map((_,i)=>"Colonna "+(i+1));
-    const rows=(hasHeader?parsed.rows.slice(1):parsed.rows).map(row=>{
+    const maxRaw=hasHeader?LIMITS.csvRows+1:LIMITS.csvRows;
+    const truncated=Boolean(parsed.truncated||parsed.rows.length>maxRaw);
+    const sourceRows=hasHeader?parsed.rows.slice(1,LIMITS.csvRows+1):parsed.rows.slice(0,LIMITS.csvRows);
+    const rows=sourceRows.map(row=>{
       const out=Array(headers.length).fill("");
       for(let i=0;i<headers.length;i++) out[i]=row[i]==null?"":row[i];
       return out;
     });
-    return {headers,rows,hasHeader,truncated:parsed.truncated,delimiter:parsed.delimiter};
+    return {headers,rows,hasHeader,truncated,delimiter:parsed.delimiter};
   }
 
   return {
