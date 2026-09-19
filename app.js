@@ -248,3 +248,7 @@ document.querySelectorAll(".kpi").forEach(button=>{
     renderPreview();
   });
 });
+
+if(new URLSearchParams(window.location.search).get("demo")==="1"){
+  loadText(SAMPLE_CSV,"listino-fornitore-demo.csv");
+}
