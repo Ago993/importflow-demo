@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="ImportFlow: demo browser-only per mappare, validare e normalizzare CSV tra sistemi giÃ  esistenti.">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>ImportFlow â€” normalizza dati tra sistemi</title>
+  <link rel="stylesheet" href="styles.css?v=20260919-1">
+  <script src="core.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#top" aria-label="ImportFlow">
+      <span class="logo">IF</span>
+      <span><strong>ImportFlow</strong><small>Demo / browser-only</small></span>
+    </a>
+    <div class="topbadges">
+      <span class="badge">LOCAL-FIRST</span>
+      <span class="badge privacy">NESSUN UPLOAD</span>
+    </div>
+  </header>
+  <main id="top">
+    <section class="hero shell">
+      <div class="hero-copy">
+        <span class="eyebrow"><span></span>PONTE TRA I SISTEMI CHE USI GIÃ€</span>
+        <h1>Basta copia-incolla<br><em>tra sistemi diversi.</em></h1>
+        <p>Importa un CSV, abbina le colonne al tracciato richiesto, valida i dati ed esporta un file pulito. Senza sostituire il gestionale.</p>
+        <div class="hero-actions">
+          <label class="button primary" for="fileInput">Carica un CSV</label>
+          <button class="button ghost" id="sampleBtn" type="button">Carica dati di esempio</button>
+          <input id="fileInput" type="file" accept=".csv,text/csv,text/plain" hidden>
+        </div>
+        <p class="privacy-note">Il file resta nel browser. Nessun dato viene inviato a server esterni.</p>
+      </div>
+      <div class="hero-visual" aria-hidden="true">
+        <div class="system source">
+          <small>SISTEMA A</small><strong>Export fornitore</strong>
+          <span>cod_art</span><span>descr</span><span>listino</span><span>giacenza</span>
+        </div>
+        <div class="bridge"><b>â†’</b><span>MAPPA</span><span>VALIDA</span><span>NORMALIZZA</span></div>
+        <div class="system target">
+          <small>SISTEMA B</small><strong>Tracciato pulito</strong>
+          <span>sku</span><span>nome</span><span>prezzo</span><span>disponibilita</span>
+        </div>
+      </div>
+    </section>
+    <section class="workflow shell" id="workspace" hidden>
+      <div class="workspace-head">
+        <div>
+          <span class="section-kicker">01 / SORGENTE</span>
+          <h2 id="fileName">File caricato</h2>
+          <p id="sourceMeta">â€”</p>
+        </div>
+        <button id="resetBtn" class="text-button" type="button">Ricomincia</button>
+      </div>
+
+      <div class="workspace-grid">
+        <aside class="mapping-panel">
+          <div class="panel-title">
+            <div><span class="section-kicker">02 / MAPPATURA</span><h3>Abbina le colonne</h3></div>
+            <span class="auto-pill">AUTO</span>
+          </div>
+          <p class="panel-intro">ImportFlow propone gli abbinamenti. Puoi correggerli prima della trasformazione.</p>
+          <div id="mappingRows" class="mapping-rows"></div>
+          <div class="defaults-block">
+            <h4>Valori predefiniti</h4>
+            <label>IVA %<input id="defaultIva" type="text" inputmode="decimal" value="22"></label>
+            <label>DisponibilitÃ <input id="defaultStock" type="text" inputmode="numeric" value="0"></label>
+            <label>Categoria<input id="defaultCategory" type="text" value="Non categorizzato"></label>
+          </div>
+        </aside>
+        <section class="result-panel">
+          <div class="panel-title result-title">
+            <div><span class="section-kicker">03 / VALIDAZIONE</span><h3>Risultato normalizzato</h3></div>
+            <button id="exportBtn" class="button primary compact" type="button">Esporta CSV</button>
+          </div>
+
+          <div id="limitBanner" class="limit-banner" hidden></div>
+
+          <div class="kpis" aria-label="Filtra risultati">
+            <button class="kpi active" data-filter="all" type="button"><span>Totale</span><strong id="kpiTotal">0</strong></button>
+            <button class="kpi valid" data-filter="valid" type="button"><span>Pronte</span><strong id="kpiValid">0</strong></button>
+            <button class="kpi warning" data-filter="warning" type="button"><span>Warning</span><strong id="kpiWarning">0</strong></button>
+            <button class="kpi error" data-filter="error" type="button"><span>Errori</span><strong id="kpiError">0</strong></button>
+          </div>
+
+          <div class="table-card">
+            <div class="table-head">
+              <div><strong>Anteprima</strong><span id="previewCount">0 righe</span></div>
+              <span class="legend">Le righe con errori non vengono esportate.</span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>Stato</th><th>SKU</th><th>Nome</th><th>Prezzo</th><th>IVA</th><th>Disp.</th><th>Categoria</th><th>Dettagli</th></tr>
+                </thead>
+                <tbody id="previewBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </div>
+    </section>
+    <section class="how shell">
+      <div class="section-heading">
+        <span class="section-kicker">COME FUNZIONA</span>
+        <h2>Un passaggio manuale diventa un flusso ripetibile.</h2>
+      </div>
+      <div class="steps">
+        <article><span>01</span><strong>Carica</strong><p>Un export CSV dal gestionale, dal fornitore o da un altro strumento.</p></article>
+        <article><span>02</span><strong>Mappa</strong><p>Abbina automaticamente le colonne al tracciato di destinazione.</p></article>
+        <article><span>03</span><strong>Valida</strong><p>Individua valori mancanti, duplicati e formati non coerenti.</p></article>
+        <article><span>04</span><strong>Esporta</strong><p>Ottieni un CSV normalizzato pronto per il passaggio successivo.</p></article>
+      </div>
+    </section>
+  </main>
+  <footer>
+    <div class="shell footer-inner">
+      <div><strong>ImportFlow</strong><small>Demo tecnica â€” nome provvisorio</small></div>
+      <span>Vanilla HTML / CSS / JS Â· elaborazione locale</span>
+    </div>
+  </footer>
+</body>
+</html>

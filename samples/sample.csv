@@ -1,0 +1,13 @@
+cod_art;descrizione;listino;aliquota;giacenza;famiglia
+A-100;Bullone inox M8;12,50;22%;120;Ferramenta
+A-101;Vite torx 4x30;8,40;;45;Ferramenta
+A-102;Guarnizione alta temperatura;5,90;22%;disponibile;Ricambi
+A-103;Filtro aria;0;22%;12;Ricambi
+A-104;Pompa acqua;-15,00;22%;3;Ricambi
+A-105;;25,00;22%;5;Ricambi
+A-106;Kit manutenzione;1.234,56;10%;2;Manutenzione
+A-106;Kit manutenzione duplicato;1.250,00;10%;4;Manutenzione
+=2+3;Articolo con codice speciale;18,50;22%;7;Test
+A-107;Prodotto senza stock;15,30;21%;;Altro
+A-108;Prodotto esaurito;99,99;22%;esaurito;Altro
+A-109;Prezzo da verificare;abc;22%;8;Altro
